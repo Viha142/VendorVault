@@ -1,0 +1,6 @@
+Supplier,Category,Fulfillment,OnTime,PriceScore,Inventory,Rating
+FreshFoods Ltd,Grocery,95,92,4.5,500,4.8
+QuickSupply,Grocery,82,75,4.2,250,4.0
+RetailPro,Dairy,91,88,4.4,350,4.6
+MegaTrade,Snacks,65,60,3.8,150,3.5
+PrimeWholesale,Beverages,98,95,4.9,700,4.9
