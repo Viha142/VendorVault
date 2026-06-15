@@ -16,31 +16,46 @@ st.set_page_config(
     layout="wide"
 )
 st.markdown("""
-     <style>
+<style>
 
-     [data-testid="stSidebar"]{
-background:#111827;
+.stApp{
+    background:#F5F7FB;
 }
 
-.block-container{
-padding-top:1rem;
+[data-testid="stSidebar"]{
+    background:linear-gradient(180deg,#071B4A,#0D2D73);
 }
 
-h1,h2,h3{
-font-weight:700;
+[data-testid="stSidebar"] *{
+    color:white;
 }
 
-.stButton button{
-width:100%;
-border-radius:12px;
-height:3em;
-font-weight:bold;
+.metric-card{
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    text-align:center;
+}
+
+.dashboard-card{
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+
+.small-badge{
+    background:#E8F5E9;
+    color:#2E7D32;
+    padding:6px 12px;
+    border-radius:20px;
+    display:inline-block;
+    font-size:12px;
 }
 
 </style>
-""",unsafe_allow_html=True)
-    
-
+""", unsafe_allow_html=True)
 
 
 # -------------------------
@@ -104,6 +119,12 @@ page = st.sidebar.radio(
 if page == "Dashboard":
 
     st.markdown("""
+               
+<h1>Welcome back, Viha 👋</h1>
+<p style='color:gray'>
+Here's what's happening with your procurement today.
+</p>
+
 <div style="
 padding:25px;
 border-radius:20px;
@@ -121,45 +142,74 @@ margin-bottom:20px;
         < products["MinimumStock"]
     ]
 
-    col1,col2,col3=st.columns(3)
+    col1,col2,col3,col4 = st.columns(4)
 
     with col1:
-        st.markdown(f"""
-                    <div style="
-                    background:#1E293B;
-                    padding:20px;
-                    border-radius:15px;
-                     text-align:center;">
-    <h3>🏢 Suppliers</h3>
+          st.markdown(f"""
+    <div class='metric-card'>
+    <h4>🏢 Suppliers</h4>
     <h1>{len(suppliers)}</h1>
     </div>
-    """,unsafe_allow_html=True)
-    
+    """, unsafe_allow_html=True)
 
     with col2:
-         st.markdown(f"""
-    <div style="
-    background:#7F1D1D;
-    padding:20px;
-    border-radius:15px;
-    text-align:center;">
-    <h3>⚠ Low Stock</h3>
+               st.markdown(f"""
+    <div class='metric-card'>
+    <h4>⚠️ Low Stock</h4>
     <h1>{len(low_stock)}</h1>
     </div>
-    """,unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
     with col3:
-         st.markdown(f"""
-    <div style="
-    background:#14532D;
-    padding:20px;
-    border-radius:15px;
-    text-align:center;">
-    <h3>⭐ Reliability</h3>
-    <h1>{round(suppliers['ReliabilityScore'].mean(),1)}</h1>
+              st.markdown(f"""
+    <div class='metric-card'>
+    <h4>🛡 Reliability</h4>
+    <h1>{round(suppliers['ReliabilityScore'].mean(),1)}%</h1>
     </div>
-    """,unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
+    with col4:
+              st.markdown("""
+    <div class='metric-card'>
+    <h4>💰 Savings</h4>
+    <h1>₹12,450</h1>
+    </div>
+    """, unsafe_allow_html=True)
+    left,right = st.columns([2,1])
+
+    with right:
+
+            st.markdown("""
+    <div class='dashboard-card'>
+    <h3>✨ AI Insights</h3>
+
+    • Reorder Milk within 2 days<br><br>
+
+    • Bread supplier cost 8% higher<br><br>
+
+    • Biscuit demand rising next week<br><br>
+
+    • Reliability score improving
+    </div>
+    """, unsafe_allow_html=True)
+    with left:
+
+             st.markdown("""
+    <div class='dashboard-card'>
+    <h3>Inventory Risk Overview</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    for _, row in low_stock.iterrows():
+
+        percent = min(
+            100,
+            row["CurrentStock"] /
+            row["MinimumStock"] * 100
+        )
+
+        st.write(row["Product"])
+        st.progress(percent/100)        
     st.divider()
 
     st.subheader("⚠️ Low Stock Alerts")
