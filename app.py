@@ -1,30 +1,52 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import google.generativeai as genai
+from openai import OpenAI
+
+
 
 # -------------------------
 # PAGE CONFIG
 # -------------------------
 
+
 st.set_page_config(
-    page_title="TrustChain AI",
-    page_icon="📦",
-    layout="wide"
+    st.markdown("""
+<style>
+
+[data-testid="stSidebar"]{
+background:#111827;
+}
+
+.block-container{
+padding-top:1rem;
+}
+
+h1,h2,h3{
+font-weight:700;
+}
+
+.stButton button{
+width:100%;
+border-radius:12px;
+height:3em;
+font-weight:bold;
+}
+
+</style>
+""",unsafe_allow_html=True)
+    
 )
 
 # -------------------------
 # GEMINI SETUP
 # -------------------------
 
-genai.configure(
-    api_key=st.secrets["GEMINI_API_KEY"]
-)
+client = OpenAI(
+    api_key=st.secrets["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
 
-model = genai.GenerativeModel(
-    "gemini-1.5-flash"
 )
-
 # -------------------------
 # LOAD DATA
 # -------------------------
@@ -76,32 +98,62 @@ page = st.sidebar.radio(
 
 if page == "Dashboard":
 
-    st.title("📊 Supply Chain Dashboard")
+    st.markdown("""
+<div style="
+padding:25px;
+border-radius:20px;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+color:white;
+margin-bottom:20px;
+">
+<h1>📦 TrustChain AI</h1>
+<p>Smart Procurement Intelligence for Small Businesses</p>
+</div>
+""", unsafe_allow_html=True)
 
     low_stock = products[
         products["CurrentStock"]
         < products["MinimumStock"]
     ]
 
-    c1, c2, c3 = st.columns(3)
+    col1,col2,col3=st.columns(3)
 
-    c1.metric(
-        "Total Suppliers",
-        len(suppliers)
-    )
+    with col1:
+        st.markdown(f"""
+                    <div style="
+                    background:#1E293B;
+                    padding:20px;
+                    border-radius:15px;
+                     text-align:center;">
+    <h3>🏢 Suppliers</h3>
+    <h1>{len(suppliers)}</h1>
+    </div>
+    """,unsafe_allow_html=True)
+    
 
-    c2.metric(
-        "Low Stock Products",
-        len(low_stock)
-    )
+    with col2:
+         st.markdown(f"""
+    <div style="
+    background:#7F1D1D;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;">
+    <h3>⚠ Low Stock</h3>
+    <h1>{len(low_stock)}</h1>
+    </div>
+    """,unsafe_allow_html=True)
 
-    c3.metric(
-        "Average Reliability",
-        round(
-            suppliers["ReliabilityScore"].mean(),
-            1
-        )
-    )
+    with col3:
+         st.markdown(f"""
+    <div style="
+    background:#14532D;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;">
+    <h3>⭐ Reliability</h3>
+    <h1>{round(suppliers['ReliabilityScore'].mean(),1)}</h1>
+    </div>
+    """,unsafe_allow_html=True)
 
     st.divider()
 
@@ -274,11 +326,17 @@ Give:
 
         with st.spinner("Thinking..."):
 
-            response = model.generate_content(
-                prompt
+            response = client.chat.completions.create(
+                 model="llama-3.3-70b-versatile",
+                 messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
             )
-
-            st.success(response.text)
+            answer = response.choices[0].message.content
+            st.success(answer)
 
 # ==================================================
 # CONTRACT CENTER
@@ -305,9 +363,16 @@ elif page == "Contract Center":
 
     st.subheader("Risk Meter")
 
-    st.progress(
-        risk / 100
-    )
+    fig = px.pie(
+    names=["Risk","Safe"],
+    values=[risk,100-risk],
+    hole=0.75
+)
+
+    st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
     st.write(
         f"Risk Level: {risk}%"
