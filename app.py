@@ -14,11 +14,11 @@ st.set_page_config(
     page_title="TrustChain AI",
     page_icon="📦",
     layout="wide"
+)
+st.markdown("""
+     <style>
 
-    st.markdown("""
-<style>
-
-[data-testid="stSidebar"]{
+     [data-testid="stSidebar"]{
 background:#111827;
 }
 
@@ -40,7 +40,8 @@ font-weight:bold;
 </style>
 """,unsafe_allow_html=True)
     
-)
+
+
 
 # -------------------------
 # GEMINI SETUP
