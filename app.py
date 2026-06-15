@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from openai import OpenAI
+import plotly.graph_objects as go
 
 
 
@@ -175,41 +176,60 @@ margin-bottom:20px;
     <h1>₹12,450</h1>
     </div>
     """, unsafe_allow_html=True)
-    left,right = st.columns([2,1])
+    left,right = st.columns([1,1])
 
-    with right:
-
-            st.markdown("""
-    <div class='dashboard-card'>
-    <h3>✨ AI Insights</h3>
-
-    • Reorder Milk within 2 days<br><br>
-
-    • Bread supplier cost 8% higher<br><br>
-
-    • Biscuit demand rising next week<br><br>
-
-    • Reliability score improving
-    </div>
-    """, unsafe_allow_html=True)
     with left:
 
-             st.markdown("""
-    <div class='dashboard-card'>
-    <h3>Inventory Risk Overview</h3>
+          avg_score = round(
+        suppliers["ReliabilityScore"].mean(),
+        0
+    )
+
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=avg_score,
+            title={"text":"Procurement Health"},
+            gauge={
+                "axis":{"range":[0,100]}
+            }
+        )
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+    with right:
+
+        st.markdown("""
+    <div style="
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+
+    <h3>✨ AI Insights</h3>
+
+    <br>
+
+    • Reorder Milk within 2 days
+
+    <br><br>
+
+    • Bread supplier cost 8% higher
+
+    <br><br>
+
+    • Biscuit demand increasing next week
+
+    <br><br>
+
+    • Reliability score improving
+
     </div>
     """, unsafe_allow_html=True)
-
-    for _, row in low_stock.iterrows():
-
-        percent = min(
-            100,
-            row["CurrentStock"] /
-            row["MinimumStock"] * 100
-        )
-
-        st.write(row["Product"])
-        st.progress(percent/100)        
+      
     st.divider()
 
     st.subheader("⚠️ Low Stock Alerts")
@@ -229,39 +249,68 @@ margin-bottom:20px;
         ascending=False
     )
 
-    st.dataframe(
-        top[
-            [
-                "Supplier",
-                "Category",
-                "ReliabilityScore"
-            ]
-        ]
-    )
+    for _, row in top.iterrows():
 
+         st.markdown(f"""
+    <div style="
+    background:white;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:15px;
+    box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+    <h4>{row['Supplier']}</h4>
+
+    <p>{row['Category']}</p>
+
+    <h3>{row['ReliabilityScore']}%</h3>
+
+    </div>
+    """,
+    unsafe_allow_html=True)
+    st.subheader("📍 Supplier Locations")
+
+    fig = px.scatter_mapbox(
+    suppliers,
+    lat="Lat",
+    lon="Lon",
+    hover_name="Supplier",
+    zoom=3,
+    height=450
+)
+
+    fig.update_layout(
+    mapbox_style="open-street-map",
+    margin=dict(l=0,r=0,t=0,b=0)
+)
+
+    st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 # ==================================================
 # SUPPLIER RANKINGS
 # ==================================================
-
+# 
 elif page == "Supplier Rankings":
 
-    st.title("🏆 Supplier Rankings")
+     st.title("🏆 Supplier Rankings")
 
-    ranking = suppliers.sort_values(
+     ranking = suppliers.sort_values(
         "ReliabilityScore",
         ascending=False
     )
 
-    st.dataframe(ranking)
+     st.dataframe(ranking)
 
-    fig = px.bar(
+     fig = px.bar(
         ranking,
         x="Supplier",
         y="ReliabilityScore",
         title="Reliability Score Ranking"
     )
 
-    st.plotly_chart(
+     st.plotly_chart(
         fig,
         use_container_width=True
     )
