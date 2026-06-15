@@ -11,6 +11,10 @@ from openai import OpenAI
 
 
 st.set_page_config(
+    page_title="TrustChain AI",
+    page_icon="📦",
+    layout="wide"
+
     st.markdown("""
 <style>
 
